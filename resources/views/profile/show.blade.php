@@ -17,7 +17,7 @@
         .fb-timeline-cover {
             width: 100%;
             height: 315px;
-            background: linear-gradient(to bottom, #7f8c8d, #95a5a6); /* Portada gris por defecto */
+            background: linear-gradient(to bottom, #7f8c8d, #95a5a6);
             position: relative;
             border: 1px solid #000;
             border-bottom: none;
@@ -40,6 +40,7 @@
             height: 42px;
             border-radius: 0 0 3px 3px;
         }
+        /* Botón Gris Estándar */
         .fb-btn-gray {
             background: linear-gradient(#f6f7f9, #ebedf0);
             border: 1px solid #ced0d4;
@@ -48,8 +49,30 @@
             font-size: 12px;
             padding: 4px 10px;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px; /* Altura fija para alineación */
         }
         .fb-btn-gray:hover { background: #e9ebee; }
+
+        /* Botón Verde (Agregar Amigo) */
+        .fb-btn-green {
+            background-color: #42b72a;
+            border: 1px solid #2c8415;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 0 10px;
+            cursor: pointer;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 1px 0 rgba(0,0,0,.1);
+        }
+        .fb-btn-green:hover { background-color: #36a020; }
+
         .fb-box {
             background: white;
             border: 1px solid #d3d6db;
@@ -96,7 +119,7 @@
         
         <div class="relative mb-4">
             <div class="fb-timeline-cover overflow-hidden group cursor-pointer">
-                <img src="https://picsum.photos/851/315?random=9" class="w-full h-full object-cover">
+                <img src="https://picsum.photos/seed/{{ $user->id }}/851/315" class="w-full h-full object-cover">
                 
                 <h1 class="absolute bottom-4 left-[200px] text-white text-[30px] font-bold shadow-black drop-shadow-md leading-none">
                     {{ $user->name }}
@@ -110,6 +133,7 @@
             </div>
 
             <div class="fb-timeline-nav flex items-center pl-[200px] pr-4 justify-between">
+                
                 <div class="flex h-full">
                     <div class="px-4 h-full flex items-center font-bold text-[#4b4f56] border-r border-[#e9eaed] cursor-pointer hover:bg-[#f6f7f9] text-[12px]">Biografía</div>
                     <div class="px-4 h-full flex items-center font-bold text-[#3b5998] border-r border-[#e9eaed] cursor-pointer hover:bg-[#f6f7f9] text-[12px]">Información</div>
@@ -118,13 +142,26 @@
                     <div class="px-4 h-full flex items-center font-bold text-[#3b5998] cursor-pointer hover:bg-[#f6f7f9] text-[12px]">Más ▼</div>
                 </div>
                 
-                <div class="flex gap-2">
+                <div class="flex gap-2 items-center">
                     @if(auth()->id() === $user->id)
-                        <button class="fb-btn-gray">Actualizar información</button>
+                        <a href="{{ route('profile.edit') }}" class="fb-btn-gray">Actualizar información</a>
                         <button class="fb-btn-gray">Registro de actividad</button>
                     @else
-                        <button class="fb-btn-gray">👤 Amigos</button>
-                        <button class="fb-btn-gray">💬 Mensaje</button>
+                        @if(auth()->user()->isFriendWith($user->id))
+                            <button class="fb-btn-gray cursor-default">
+                                <span class="text-green-600 mr-1 text-[14px]">✓</span> Amigos
+                            </button>
+                        @else
+                            <form action="{{ route('friends.add', $user->id) }}" method="POST" class="m-0">
+                                @csrf
+                                <button type="submit" class="fb-btn-green">
+                                    <span class="mr-1 text-[14px]">+1</span> Agregar a mis amigos
+                                </button>
+                            </form>
+                        @endif
+
+                        <a href="{{ route('messages.index') }}" class="fb-btn-gray">💬 Mensaje</a>
+                        <button class="fb-btn-gray px-2">...</button>
                     @endif
                 </div>
             </div>

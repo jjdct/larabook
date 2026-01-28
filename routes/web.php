@@ -63,4 +63,13 @@ Route::get('/messages', function () {
     return view('messages.index');
 })->middleware(['auth'])->name('messages.index');
 
+Route::get('/seguridad-extrema', function () {
+    return "¡Si ves esto es que confirmaste tu contraseña!";
+})->middleware(['auth', 'password.confirm']);
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/add-friend/{user}', [FriendshipController::class, 'sendRequest'])->name('friends.add');
+    // Aquí pondremos más después (aceptar, rechazar, etc.)
+});
+
 require __DIR__.'/auth.php';
