@@ -4,19 +4,20 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PageController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 // 1. RUTA PARA VER EL MURO (Dashboard)
-Route::get('/dashboard', function () {
-    // Obtener todos los posts, ordenados del más nuevo al más viejo
-    // 'user' sirve para cargar el nombre del autor de golpe y que sea rápido
-    $posts = Post::with('user')->latest()->get(); 
-    
-    return view('dashboard', ['posts' => $posts]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Ahora usa el DashboardController para cargar Posts + Amigos + Chat
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // 2. RUTA PARA PUBLICAR (Guardar en BD)
 Route::post('/posts', function (Request $request) {
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/friends/requests', [FriendshipController::class, 'index'])->name('friends.requests');
     Route::post('/friends/accept/{sender}', [FriendshipController::class, 'accept'])->name('friends.accept');
     Route::post('/friends/reject/{sender}', [FriendshipController::class, 'reject'])->name('friends.reject');
+    // Buscador
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
 });
 
 // RUTA DE PERFIL PÚBLICO
@@ -72,6 +75,18 @@ Route::get('/messages', function () {
 Route::get('/seguridad-extrema', function () {
     return "¡Si ves esto es que confirmaste tu contraseña!";
 })->middleware(['auth', 'password.confirm']);
+
+// Sistema de Mensajería
+    Route::get('/messages/archived', [MessageController::class, 'archived'])->name('messages.archived'); // <--- NUEVA
+    Route::post('/messages/{user}/archive', [MessageController::class, 'archive'])->name('messages.archive'); // <--- NUEVA
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+
+// Rutas de Páginas
+    Route::get('/pages/create', [PageController::class, 'create'])->name('pages.create')->middleware('auth');
+    Route::post('/pages', [PageController::class, 'store'])->name('pages.store')->middleware('auth');
+    Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');    
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/add-friend/{user}', [FriendshipController::class, 'sendRequest'])->name('friends.add');

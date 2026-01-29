@@ -97,13 +97,15 @@
                 </p>
 
                 <div class="text-center md:text-left">
-                    <a href="{{ route('register') }}" class="inline-block fb-green-btn text-white font-bold text-xl px-10 py-2 rounded-[5px] shadow-md hover:brightness-110">
+                    <a href="{{ route('register') }}" class="inline-block fb-green-btn text-white font-bold text-xl px-10 py-2 rounded-[5px] shadow-md hover:brightness-110 no-underline">
                         Registrarte
                     </a>
                 </div>
                 
                 <div class="mt-6 border-t border-[#ddd] pt-4">
-                     <p class="text-[13px] font-bold text-[#3b5998] cursor-pointer hover:underline">Crea una página</p> 
+                     <a href="{{ route('pages.create') }}" class="text-[13px] font-bold text-[#3b5998] cursor-pointer hover:underline">
+                        Crea una página
+                     </a> 
                      <span class="text-[13px] text-[#666]"> para un grupo de música, un famoso o un negocio.</span>
                 </div>
             </div>

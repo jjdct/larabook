@@ -88,6 +88,7 @@
             @endif
         </div>
     </div>
+    @include('partials.chat-overlay')
 
 </body>
 </html>

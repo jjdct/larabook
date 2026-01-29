@@ -53,11 +53,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 28px; /* Altura fija para alineación */
+            height: 28px;
         }
         .fb-btn-gray:hover { background: #e9ebee; }
 
-        /* Botón Verde (Agregar Amigo / Confirmar) */
+        /* Botón Verde */
         .fb-btn-green {
             background-color: #42b72a;
             border: 1px solid #2c8415;
@@ -79,14 +79,6 @@
             border-radius: 3px;
             margin-bottom: 10px;
         }
-        .fb-box-header {
-            background-color: #f6f7f9;
-            border-bottom: 1px solid #e9eaed;
-            padding: 8px 10px;
-            font-weight: bold;
-            color: #4b4f56;
-            font-size: 12px;
-        }
         .fb-link { color: #3b5998; cursor: pointer; text-decoration: none; }
         .fb-link:hover { text-decoration: underline; }
     </style>
@@ -96,10 +88,10 @@
     <nav class="fb-dark-blue fixed top-0 w-full z-50 h-[42px] border-b border-[#29487d] flex items-center justify-between px-4 md:px-20 shadow-sm">
         <div class="flex items-center gap-3">
             <a href="{{ route('dashboard') }}" class="bg-white text-[#3b5998] w-6 h-6 rounded-[2px] flex items-center justify-center font-bold text-lg pb-1 hover:opacity-90">L</a>
-            <div class="hidden md:flex bg-white rounded-[3px] border border-[#203a6d] h-6 items-center w-[350px]">
-                <input type="text" placeholder="Busca personas, lugares y cosas" class="w-full px-2 text-sm bg-transparent focus:outline-none placeholder-gray-500">
-                <div class="bg-[#f2f2f2] h-full px-2 flex items-center border-l border-gray-300 cursor-pointer">🔍</div>
-            </div>
+            <form action="{{ route('search') }}" method="GET" class="hidden md:flex bg-white rounded-[3px] border border-[#203a6d] h-6 items-center w-[350px]">
+                <input type="text" name="q" placeholder="Busca personas, lugares y cosas" class="w-full px-2 text-sm bg-transparent focus:outline-none placeholder-gray-500">
+                <button type="submit" class="bg-[#f2f2f2] h-full px-2 flex items-center border-l border-gray-300 cursor-pointer">🔍</button>
+            </form>
         </div>
         <div class="flex items-center gap-4 text-white font-bold text-xs">
             <a href="{{ route('users.show', auth()->user()) }}" class="flex items-center gap-2 hover:bg-[#0000001a] px-2 py-1 rounded-[2px]">
@@ -176,7 +168,7 @@
                             </form>
                         @endif
 
-                        <a href="{{ route('messages.index') }}" class="fb-btn-gray">💬 Mensaje</a>
+                        <a href="{{ route('messages.show', $user) }}" class="fb-btn-gray">💬 Mensaje</a>
                         <button class="fb-btn-gray px-2">...</button>
                     @endif
                 </div>
@@ -271,5 +263,7 @@
             </div>
         </div>
     </div>
+    
+    @include('partials.chat-overlay')
 </body>
 </html>
