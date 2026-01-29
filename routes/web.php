@@ -8,6 +8,9 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\LikeController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\PostController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,22 +22,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// 2. RUTA PARA PUBLICAR (Guardar en BD)
-Route::post('/posts', function (Request $request) {
-    // Validar que no envíen cosas vacías
-    $request->validate([
-        'content' => 'required|max:255',
-    ]);
-
-    // Crear el post
-    Post::create([
-        'user_id' => auth()->id(), // El ID del usuario conectado
-        'content' => $request->input('content'),
-    ]);
-
-    // Recargar la página
-    return back();
-})->middleware(['auth'])->name('posts.store');
+// 2. RUTA PARA PUBLICAR (Usando el Controlador, NO el closure) (Guardar en BD)
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show'); // <--- NUEVA
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -86,7 +76,11 @@ Route::get('/seguridad-extrema', function () {
 // Rutas de Páginas
     Route::get('/pages/create', [PageController::class, 'create'])->name('pages.create')->middleware('auth');
     Route::post('/pages', [PageController::class, 'store'])->name('pages.store')->middleware('auth');
-    Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');    
+    Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show'); 
+    
+// Rutas de Interacción
+    Route::post('/posts/{post}/like', [LikeController::class, 'togglePost'])->name('posts.like');
+    Route::post('/posts/{post}/comment', [CommentController::class, 'storePost'])->name('posts.comment');    
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/add-friend/{user}', [FriendshipController::class, 'sendRequest'])->name('friends.add');

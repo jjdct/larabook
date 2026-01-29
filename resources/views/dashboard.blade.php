@@ -82,6 +82,12 @@
                 <li class="flex items-center gap-2 p-1 hover:bg-[#eff1f3] cursor-pointer rounded-[2px]">
                     <span class="text-sm">📅</span> <span class="text-xs">Eventos</span>
                 </li>
+                <li class="flex items-center gap-2 p-1 hover:bg-[#eff1f3] cursor-pointer rounded-[2px]">
+                    <span class="text-sm">🚩</span> 
+                    <a href="{{ route('pages.create') }}" class="text-xs hover:underline text-[#141823]">
+                        Crear Página
+                    </a>
+                </li>
             </ul>
         </div>
         
@@ -92,16 +98,30 @@
                     <div class="flex items-center gap-1 cursor-pointer text-[#1d2129]">
                         ✏️ <span class="hover:underline">Actualizar estado</span>
                     </div>
+                    <div class="flex items-center gap-1 cursor-pointer text-[#3b5998] border-l border-gray-300 pl-4" onclick="document.getElementById('post-image').click()">
+                        📷 <span class="hover:underline">Agregar fotos/video</span>
+                    </div>
                 </div>
 
                 <div class="p-3">
                     <div class="flex gap-2">
                         <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random" class="w-8 h-8 rounded-[2px] border border-gray-200">
-                        <form action="{{ route('posts.store') }}" method="POST" class="w-full">
+                        
+                        <form action="{{ route('posts.store') }}" method="POST" class="w-full" enctype="multipart/form-data">
                             @csrf
+                            
                             <textarea name="content" rows="2" placeholder="¿Qué estás pensando?" 
                                    class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-500 mt-1"></textarea>
                             
+                            <input type="file" name="image" id="post-image" class="hidden" accept="image/*" onchange="alert('📷 Foto seleccionada: ' + this.files[0].name)">
+                            
+                            @error('content')
+                                <div class="text-red-500 text-[10px] mt-1">{{ $message }}</div>
+                            @enderror
+                            @error('image')
+                                <div class="text-red-500 text-[10px] mt-1">{{ $message }}</div>
+                            @enderror
+
                             <div class="border-t border-[#e9eaed] pt-2 mt-2 flex justify-between items-center">
                                 <div class="flex gap-3"></div>
                                 <button type="submit" class="btn-post rounded-[2px]">Publicar</button>
@@ -112,28 +132,7 @@
             </div>
 
             @foreach ($posts as $post)
-            <div class="bg-white fb-border rounded-[2px] p-3">
-                <div class="flex gap-2 mb-2">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($post->user->name) }}&background=random" class="w-10 h-10 rounded-[2px] border border-gray-200">
-                    <div>
-                        <a href="{{ route('users.show', $post->user) }}" class="fb-link text-[13px] block leading-tight">
-                            {{ $post->user->name }}
-                        </a>
-                        <span class="text-[11px] text-[#9197a3] cursor-pointer hover:underline">
-                            {{ $post->created_at->diffForHumans() }}
-                        </span>
-                    </div>
-                </div>
-                
-                <p class="text-[13px] text-[#141823] mb-2 leading-snug">
-                    {{ $post->content }}
-                </p>
-
-                <div class="text-[11px] font-bold text-[#3b5998] flex gap-4 mt-1 border-t border-[#e9eaed] pt-1">
-                    <span class="cursor-pointer hover:underline">Me gusta</span>
-                    <span class="cursor-pointer hover:underline">Comentar</span>
-                </div>
-            </div>
+                @include('partials.post', ['post' => $post])
             @endforeach
 
         </div>

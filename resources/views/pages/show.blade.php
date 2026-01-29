@@ -107,10 +107,8 @@
                                 <span class="mr-1 text-[14px]">👍</span> Me gusta
                             </button>
                         @endif
-
                         <button class="fb-btn-gray">💬 Mensaje</button>
                     @endif
-                    
                     <button class="fb-btn-gray px-2">...</button>
                 </div>
             </div>
@@ -135,6 +133,7 @@
             </div>
 
             <div class="w-[536px]">
+                
                 @if(auth()->id() === $page->user_id)
                 <div class="fb-box">
                     <div class="bg-[#f6f7f9] border-b border-[#e9eaed] px-3 py-2 text-xs font-bold text-[#4b4f56]">
@@ -149,9 +148,14 @@
                 </div>
                 @endif
                 
-                <div class="fb-box p-4 text-center text-gray-400 text-xs">
-                    No hay publicaciones aún en esta página.
-                </div>
+                @forelse($posts as $post)
+                    @include('partials.post', ['post' => $post])
+                @empty
+                    <div class="fb-box p-4 text-center text-gray-400 text-xs">
+                        No hay publicaciones aún en esta página.
+                    </div>
+                @endforelse
+
             </div>
         </div>
     </div>

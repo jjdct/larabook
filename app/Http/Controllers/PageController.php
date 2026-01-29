@@ -47,7 +47,6 @@ class PageController extends Controller
         return redirect()->route('pages.show', $page->slug);
     }
 
-    // Ver el perfil de la página
     public function show($slug)
     {
         $page = Page::where('slug', $slug)->firstOrFail();
@@ -55,6 +54,11 @@ class PageController extends Controller
         // ¿El usuario actual es fan?
         $isFan = Auth::check() ? $page->fans->contains(Auth::id()) : false;
 
-        return view('pages.show', compact('page', 'isFan'));
+        // OBTENER POSTS DE LA PÁGINA
+        // Por ahora enviamos una colección vacía para que no falle la vista.
+        // (Más adelante haremos que las páginas puedan tener sus propios posts)
+        $posts = collect(); 
+
+        return view('pages.show', compact('page', 'isFan', 'posts'));
     }
 }
