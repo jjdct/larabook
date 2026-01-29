@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use App\Models\Post;
+use App\Http\Controllers\FriendshipController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,6 +39,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Sistema de Amigos
+    Route::post('/add-friend/{user}', [FriendshipController::class, 'sendRequest'])->name('friends.add');
+    Route::get('/friends/requests', [FriendshipController::class, 'index'])->name('friends.requests');
+    Route::post('/friends/accept/{sender}', [FriendshipController::class, 'accept'])->name('friends.accept');
+    Route::post('/friends/reject/{sender}', [FriendshipController::class, 'reject'])->name('friends.reject');
 });
 
 // RUTA DE PERFIL PÚBLICO

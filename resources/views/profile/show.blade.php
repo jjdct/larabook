@@ -57,7 +57,7 @@
         }
         .fb-btn-gray:hover { background: #e9ebee; }
 
-        /* Botón Verde (Agregar Amigo) */
+        /* Botón Verde (Agregar Amigo / Confirmar) */
         .fb-btn-green {
             background-color: #42b72a;
             border: 1px solid #2c8415;
@@ -148,9 +148,25 @@
                         <button class="fb-btn-gray">Registro de actividad</button>
                     @else
                         @if(auth()->user()->isFriendWith($user->id))
-                            <button class="fb-btn-gray cursor-default">
+                            <button class="fb-btn-gray cursor-default group">
                                 <span class="text-green-600 mr-1 text-[14px]">✓</span> Amigos
                             </button>
+
+                        @elseif(auth()->user()->hasReceivedRequestFrom($user))
+                            <form action="{{ route('friends.accept', $user) }}" method="POST" class="m-0">
+                                @csrf
+                                <button type="submit" class="fb-btn-green mr-1">Confirmar</button>
+                            </form>
+                            <form action="{{ route('friends.reject', $user) }}" method="POST" class="m-0">
+                                @csrf
+                                <button type="submit" class="fb-btn-gray">Eliminar</button>
+                            </form>
+
+                        @elseif(auth()->user()->hasSentRequestTo($user))
+                            <button class="fb-btn-gray text-[#4b4f56] cursor-default">
+                                Solicitud enviada
+                            </button>
+
                         @else
                             <form action="{{ route('friends.add', $user->id) }}" method="POST" class="m-0">
                                 @csrf
@@ -164,6 +180,7 @@
                         <button class="fb-btn-gray px-2">...</button>
                     @endif
                 </div>
+
             </div>
 
             <div class="fb-profile-pic overflow-hidden group cursor-pointer">

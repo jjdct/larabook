@@ -82,7 +82,7 @@ Aunque parece 2012, bajo el capó es pura potencia moderna:
 
    Nota: Configura tu base de datos en el archivo .env (por defecto usa SQLite).
 
-4. Base de datos:
+4. **Base de datos:**
    ```bash
    php artisan migrate
    ```

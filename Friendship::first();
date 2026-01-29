@@ -1,0 +1,11 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#6591
+    [34mid[39m: [35m2[39m,
+    [34mname[39m: "[32mCherrim[39m",
+    [34memail[39m: "[32mjosedejesusdelacruztorres@gmail.com[39m",
+    [34memail_verified_at[39m: "[32m2026-01-29 00:03:01[39m",
+    #[33mpassword[39m: "[32m$2y$12$A/N44AhCRrY82C3sDHfnXO1pu6m6CS0ChGuG9WPhWHOBs8Zk0GkKC[39m",
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mcreated_at[39m: "[32m2026-01-29 00:02:53[39m",
+    [34mupdated_at[39m: "[32m2026-01-29 00:03:01[39m",
+  }
+
