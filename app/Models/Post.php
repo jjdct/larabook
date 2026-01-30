@@ -10,7 +10,7 @@ class Post extends Model
     use HasFactory;
 
     // AÑADIR 'image_path' AQUÍ 👇
-    protected $fillable = ['user_id', 'content', 'image_path'];
+    protected $fillable = ['user_id', 'content', 'image_path', 'page_id'];
 
     public function user()
     {
@@ -31,5 +31,11 @@ class Post extends Model
     public function isLikedBy(User $user)
     {
         return $this->likes()->where('user_id', $user->id)->exists();
+    }
+
+    // Relación con la Página (NUEVA)
+    public function page()
+    {
+        return $this->belongsTo(Page::class);
     }
 }

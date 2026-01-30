@@ -44,7 +44,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/user/{user}', function (App\Models\User $user) {
     
     // Cargar los posts SOLO de este usuario
-    $posts = $user->posts()->latest()->get();
+    // SOLO los que NO son de una página (page_id debe ser nulo)
+    $posts = $user->posts()->whereNull('page_id')->latest()->get();
     
     return view('profile.show', [
         'user' => $user,
@@ -76,7 +77,12 @@ Route::get('/seguridad-extrema', function () {
 // Rutas de Páginas
     Route::get('/pages/create', [PageController::class, 'create'])->name('pages.create')->middleware('auth');
     Route::post('/pages', [PageController::class, 'store'])->name('pages.store')->middleware('auth');
-    Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show'); 
+    Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
+    // INBOX DE PÁGINA
+    Route::get('/pages/{slug}/inbox', [PageController::class, 'inbox'])->name('pages.inbox');
+    // Rutas de Administración de Páginas
+    Route::get('/pages/{slug}/edit', [PageController::class, 'edit'])->name('pages.edit');
+    Route::put('/pages/{slug}', [PageController::class, 'update'])->name('pages.update');  
     
 // Rutas de Interacción
     Route::post('/posts/{post}/like', [LikeController::class, 'togglePost'])->name('posts.like');
@@ -84,7 +90,7 @@ Route::get('/seguridad-extrema', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/add-friend/{user}', [FriendshipController::class, 'sendRequest'])->name('friends.add');
-    // Aquí pondremos más después (aceptar, rechazar, etc.)
+    // Aquí pondremos más después (aceptar, rechazar, etc.)      
 });
 
 require __DIR__.'/auth.php';

@@ -140,10 +140,20 @@
                         ✏️ Publicar como {{ $page->name }}
                     </div>
                     <div class="p-3">
-                        <textarea rows="2" placeholder="Escribe algo en esta página..." class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-500"></textarea>
-                        <div class="border-t border-[#e9eaed] mt-2 pt-2 text-right">
-                            <button class="bg-[#4e69a2] text-white border border-[#435a8b] font-bold text-[12px] px-3 py-1">Publicar</button>
-                        </div>
+                        <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="page_id" value="{{ $page->id }}">
+                            
+                            <textarea name="content" rows="2" placeholder="Escribe algo en esta página..." class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-500"></textarea>
+                            
+                            <div class="mt-2">
+                                <input type="file" name="image" class="text-xs">
+                            </div>
+
+                            <div class="border-t border-[#e9eaed] mt-2 pt-2 text-right">
+                                <button type="submit" class="bg-[#4e69a2] text-white border border-[#435a8b] font-bold text-[12px] px-3 py-1">Publicar</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 @endif

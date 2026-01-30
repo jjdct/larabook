@@ -22,7 +22,7 @@
         }
         .fb-box {
             background-color: #fff;
-            border: 1px solid #ccc; /* Sin bordes redondeados modernos */
+            border: 1px solid #ccc;
             padding: 20px;
         }
         .input-text {
@@ -78,22 +78,23 @@
 
                     <div class="flex gap-3 mb-4">
                         <div class="w-1/2">
-                            <input type="text" name="name" placeholder="Nombre" class="input-text" required value="{{ old('name') }}">
-                            @error('name') <span class="text-red-600 text-xs block mt-1">⚠ {{ $message }}</span> @enderror
+                            <input type="text" name="first_name" placeholder="Nombre" class="input-text" required value="{{ old('first_name') }}">
+                            @error('first_name') <span class="text-red-600 text-xs block mt-1">⚠️ {{ $message }}</span> @enderror
                         </div>
                         <div class="w-1/2">
-                            <input type="text" placeholder="Apellidos" class="input-text">
+                            <input type="text" name="last_name" placeholder="Apellidos" class="input-text" required value="{{ old('last_name') }}">
+                            @error('last_name') <span class="text-red-600 text-xs block mt-1">⚠️ {{ $message }}</span> @enderror
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <input type="email" name="email" placeholder="Número de móvil o correo electrónico" class="input-text" required value="{{ old('email') }}">
-                        @error('email') <span class="text-red-600 text-xs block mt-1">⚠ {{ $message }}</span> @enderror
+                        @error('email') <span class="text-red-600 text-xs block mt-1">⚠️ {{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
                         <input type="password" name="password" placeholder="Contraseña nueva" class="input-text" required>
-                        @error('password') <span class="text-red-600 text-xs block mt-1">⚠ {{ $message }}</span> @enderror
+                        @error('password') <span class="text-red-600 text-xs block mt-1">⚠️ {{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
@@ -103,22 +104,44 @@
                     <div class="mb-4">
                         <label class="text-[#141823] font-bold text-sm block mb-1">Fecha de nacimiento</label>
                         <div class="flex gap-2">
-                            <select class="border p-1 text-sm"><option>Día</option><option>28</option></select>
-                            <select class="border p-1 text-sm"><option>Mes</option><option>Ene</option></select>
-                            <select class="border p-1 text-sm"><option>Año</option><option>2026</option></select>
+                            <select name="day" class="border p-1 text-sm h-[30px]">
+                                <option value="">Día</option>
+                                @for ($i = 1; $i <= 31; $i++)
+                                    <option value="{{ $i }}">{{ $i }}</option>
+                                @endfor
+                            </select>
+
+                            <select name="month" class="border p-1 text-sm h-[30px]">
+                                <option value="">Mes</option>
+                                @foreach(['01'=>'Ene', '02'=>'Feb', '03'=>'Mar', '04'=>'Abr', '05'=>'May', '06'=>'Jun', '07'=>'Jul', '08'=>'Ago', '09'=>'Sep', '10'=>'Oct', '11'=>'Nov', '12'=>'Dic'] as $key => $mes)
+                                    <option value="{{ $key }}">{{ $mes }}</option>
+                                @endforeach
+                            </select>
+
+                            <select name="year" class="border p-1 text-sm h-[30px]">
+                                <option value="">Año</option>
+                                @for ($i = date('Y'); $i >= 1905; $i--)
+                                    <option value="{{ $i }}">{{ $i }}</option>
+                                @endfor
+                            </select>
+                            
                             <a href="#" class="text-[11px] text-[#3b5998] hover:underline ml-2 flex items-center">¿Por qué tengo que dar mi fecha de nacimiento?</a>
                         </div>
+                        @if($errors->has('day') || $errors->has('month') || $errors->has('year'))
+                            <span class="text-red-600 text-xs block mt-1">⚠️ Selecciona una fecha válida.</span>
+                        @endif
                     </div>
 
                     <div class="mb-4">
                         <div class="flex gap-4">
-                            <label class="flex items-center gap-1 text-[#1d2129] font-bold text-sm">
-                                <input type="radio" name="sex" value="2"> Mujer
+                            <label class="flex items-center gap-1 text-[#1d2129] font-bold text-sm cursor-pointer">
+                                <input type="radio" name="gender" value="female"> Mujer
                             </label>
-                            <label class="flex items-center gap-1 text-[#1d2129] font-bold text-sm">
-                                <input type="radio" name="sex" value="1"> Hombre
+                            <label class="flex items-center gap-1 text-[#1d2129] font-bold text-sm cursor-pointer">
+                                <input type="radio" name="gender" value="male"> Hombre
                             </label>
                         </div>
+                        @error('gender') <span class="text-red-600 text-xs block mt-1">⚠️ Selecciona tu sexo.</span> @enderror
                     </div>
 
                     <p class="text-[11px] text-[#777] mb-6 w-3/4">

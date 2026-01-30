@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Page; // <--- Importamos el modelo Page
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
@@ -11,17 +12,17 @@ class SearchController extends Controller
     {
         $query = $request->input('q');
 
-        // Si no escribieron nada, redirigir al inicio
-        if (!$query) {
-            return redirect()->route('dashboard');
-        }
-
-        // Buscar usuarios cuyo nombre se parezca a lo que escribieron
-        // El simbolo % significa "cualquier cosa antes o despues"
+        // Buscar Usuarios
         $users = User::where('name', 'LIKE', "%{$query}%")
-                     ->where('id', '!=', auth()->id()) // No mostrarme a mí mismo
+                     ->orWhere('email', 'LIKE', "%{$query}%")
                      ->get();
 
-        return view('search.results', compact('users', 'query'));
+        // Buscar Páginas (Fan Pages)
+        $pages = Page::where('name', 'LIKE', "%{$query}%")
+                     ->orWhere('category', 'LIKE', "%{$query}%")
+                     ->get();
+
+        // Enviamos ambas colecciones a la vista
+        return view('search.results', compact('users', 'pages', 'query'));
     }
 }

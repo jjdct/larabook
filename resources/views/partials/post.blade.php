@@ -1,10 +1,26 @@
+@php
+    // LOGICA INTELIGENTE: ¿Es post de Página o de Usuario?
+    if ($post->page_id) {
+        // ES UNA PÁGINA
+        $authorName = $post->page->name;
+        $authorUrl = route('pages.show', $post->page->slug);
+        // Las páginas solían tener fondo blanco en la foto
+        $authorImage = "https://ui-avatars.com/api/?name=" . urlencode($authorName) . "&background=white&color=333&bold=true";
+    } else {
+        // ES UN USUARIO
+        $authorName = $post->user->name;
+        $authorUrl = route('users.show', $post->user);
+        $authorImage = "https://ui-avatars.com/api/?name=" . urlencode($authorName) . "&background=random";
+    }
+@endphp
+
 <div class="bg-white fb-border rounded-[2px] mb-3">
     <div class="p-3 pb-0">
         <div class="flex gap-2 mb-2">
-            <img src="https://ui-avatars.com/api/?name={{ urlencode($post->user->name) }}&background=random" class="w-10 h-10 rounded-[2px] border border-gray-200">
+            <img src="{{ $authorImage }}" class="w-10 h-10 rounded-[2px] border border-gray-200">
             <div>
-                <a href="{{ route('users.show', $post->user) }}" class="fb-link text-[13px] block leading-tight">
-                    {{ $post->user->name }}
+                <a href="{{ $authorUrl }}" class="fb-link text-[13px] block leading-tight">
+                    {{ $authorName }}
                 </a>
                 
                 <a href="{{ route('posts.show', $post) }}" class="text-[11px] text-[#9197a3] hover:underline cursor-pointer">

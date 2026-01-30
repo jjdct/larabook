@@ -14,6 +14,7 @@ class PostController extends Controller
         $request->validate([
             'content' => 'nullable|string', // Ahora puede ser null si subes solo foto
             'image' => 'nullable|image|max:2048', // Máximo 2MB
+            'page_id' => 'nullable|exists:pages,id', // <--- Validación nueva. para paginas
         ]);
 
         // Si no hay texto ni imagen, error
@@ -24,6 +25,12 @@ class PostController extends Controller
         $post = new Post();
         $post->user_id = Auth::id();
         $post->content = $request->content;
+
+        // Si enviamos un ID de página, lo guardamos
+        if ($request->has('page_id')) {
+            // AQUÍ PODRÍAS VALIDAR SI EL USUARIO ES ADMIN DE LA PÁGINA
+            $post->page_id = $request->input('page_id');
+        }
 
         // Manejo de la imagen
         if ($request->hasFile('image')) {

@@ -22,9 +22,11 @@
             border: 1px solid #3b6e22;
         }
         .fb-input-text { 
-            border: 1px solid #1d2a5b; 
-            margin: 0; 
-            padding: 3px; 
+            border: 1px solid #bdc7d8; 
+            padding: 8px 10px;
+            font-size: 18px;
+            border-radius: 5px;
+            width: 100%;
         }
     </style>
 </head>
@@ -84,22 +86,77 @@
             <h2 class="text-[#333] text-4xl font-bold mb-2">Crear cuenta nueva</h2>
             <p class="text-[#1d2129] text-lg mb-6">Es rápido y fácil.</p>
 
-            <div class="space-y-4">
+            <form method="POST" action="{{ route('register') }}" class="space-y-3">
+                @csrf
+
                 <div class="flex gap-2">
-                    <input type="text" placeholder="Nombre" class="w-1/2 p-2 border border-[#bdc7d8] rounded-[5px] text-lg bg-[#f5f6f7]" disabled>
-                    <input type="text" placeholder="Apellidos" class="w-1/2 p-2 border border-[#bdc7d8] rounded-[5px] text-lg bg-[#f5f6f7]" disabled>
+                    <div class="w-1/2">
+                        <input type="text" name="first_name" placeholder="Nombre" class="fb-input-text" required value="{{ old('first_name') }}">
+                        @error('first_name') <span class="text-red-600 text-[10px] block">⚠️ {{ $message }}</span> @enderror
+                    </div>
+                    <div class="w-1/2">
+                        <input type="text" name="last_name" placeholder="Apellidos" class="fb-input-text" required value="{{ old('last_name') }}">
+                        @error('last_name') <span class="text-red-600 text-[10px] block">⚠️ {{ $message }}</span> @enderror
+                    </div>
                 </div>
-                <input type="text" placeholder="Número de móvil o correo electrónico" class="w-full p-2 border border-[#bdc7d8] rounded-[5px] text-lg bg-[#f5f6f7]" disabled>
-                <input type="password" placeholder="Contraseña nueva" class="w-full p-2 border border-[#bdc7d8] rounded-[5px] text-lg bg-[#f5f6f7]" disabled>
+
+                <div>
+                    <input type="email" name="email" placeholder="Número de móvil o correo electrónico" class="fb-input-text" required value="{{ old('email') }}">
+                    @error('email') <span class="text-red-600 text-[10px] block">⚠️ {{ $message }}</span> @enderror
+                </div>
+
+                <div>
+                    <input type="password" name="password" placeholder="Contraseña nueva" class="fb-input-text" required>
+                    @error('password') <span class="text-red-600 text-[10px] block">⚠️ {{ $message }}</span> @enderror
+                </div>
                 
-                <p class="text-[11px] text-[#777]">
-                    Al hacer clic en "Registrarte", aceptas nuestras Condiciones.
+                <div>
+                     <input type="password" name="password_confirmation" placeholder="Confirmar contraseña" class="fb-input-text" required>
+                </div>
+
+                <div class="mt-2">
+                    <label class="text-[#141823] font-bold text-xs block mb-1">Fecha de nacimiento</label>
+                    <div class="flex gap-1">
+                        <select name="day" class="border p-1 text-xs h-[30px] flex-1">
+                            <option value="">Día</option>
+                            @for ($i = 1; $i <= 31; $i++) <option value="{{ $i }}">{{ $i }}</option> @endfor
+                        </select>
+                        <select name="month" class="border p-1 text-xs h-[30px] flex-1">
+                            <option value="">Mes</option>
+                            @foreach(['01'=>'Ene', '02'=>'Feb', '03'=>'Mar', '04'=>'Abr', '05'=>'May', '06'=>'Jun', '07'=>'Jul', '08'=>'Ago', '09'=>'Sep', '10'=>'Oct', '11'=>'Nov', '12'=>'Dic'] as $key => $mes)
+                                <option value="{{ $key }}">{{ $mes }}</option>
+                            @endforeach
+                        </select>
+                        <select name="year" class="border p-1 text-xs h-[30px] flex-1">
+                            <option value="">Año</option>
+                            @for ($i = date('Y'); $i >= 1905; $i--) <option value="{{ $i }}">{{ $i }}</option> @endfor
+                        </select>
+                    </div>
+                    @if($errors->has('day') || $errors->has('month') || $errors->has('year'))
+                        <span class="text-red-600 text-[10px] block mt-1">⚠️ Fecha inválida.</span>
+                    @endif
+                </div>
+
+                <div class="mt-2">
+                    <div class="flex gap-3">
+                        <label class="flex items-center gap-1 text-[#1d2129] font-bold text-xs cursor-pointer">
+                            <input type="radio" name="gender" value="female" required> Mujer
+                        </label>
+                        <label class="flex items-center gap-1 text-[#1d2129] font-bold text-xs cursor-pointer">
+                            <input type="radio" name="gender" value="male" required> Hombre
+                        </label>
+                    </div>
+                    @error('gender') <span class="text-red-600 text-[10px] block mt-1">⚠️ Selecciona sexo.</span> @enderror
+                </div>
+                
+                <p class="text-[11px] text-[#777] mt-3 mb-4">
+                    Al hacer clic en "Registrarte", aceptas nuestras Condiciones, la Política de datos y la Política de cookies.
                 </p>
 
                 <div class="text-center md:text-left">
-                    <a href="{{ route('register') }}" class="inline-block fb-green-btn text-white font-bold text-xl px-10 py-2 rounded-[5px] shadow-md hover:brightness-110 no-underline">
+                    <button type="submit" class="fb-green-btn text-white font-bold text-xl px-10 py-1.5 rounded-[5px] shadow-md hover:brightness-110 w-48">
                         Registrarte
-                    </a>
+                    </button>
                 </div>
                 
                 <div class="mt-6 border-t border-[#ddd] pt-4">
@@ -108,7 +165,7 @@
                      </a> 
                      <span class="text-[13px] text-[#666]"> para un grupo de música, un famoso o un negocio.</span>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
     

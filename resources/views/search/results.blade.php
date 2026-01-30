@@ -10,6 +10,7 @@
         .fb-dark-blue { background-color: #3b5998; }
         .fb-container { width: 851px; margin: 20px auto; background: #fff; border: 1px solid #d3d6db; border-radius: 3px; min-height: 400px; }
         .fb-header-gray { background-color: #f6f7f9; padding: 10px 12px; border-bottom: 1px solid #e9eaed; font-weight: bold; font-size: 14px; color: #4b4f56; }
+        .section-header { background-color: #f6f7f9; padding: 8px 12px; border-bottom: 1px solid #e9eaed; font-weight: bold; font-size: 12px; color: #90949c; text-transform: uppercase; margin-top: 10px; }
         .result-item { padding: 12px; border-bottom: 1px solid #e9eaed; display: flex; gap: 10px; align-items: center; }
         .link-name { color: #3b5998; font-weight: bold; font-size: 14px; text-decoration: none; }
         .link-name:hover { text-decoration: underline; }
@@ -28,7 +29,7 @@
             </form>
         </div>
         <div class="flex items-center gap-4 text-white font-bold text-xs">
-            <a href="{{ route('dashboard') }}">Inicio</a>
+            <a href="{{ route('dashboard') }}" class="hover:underline">Inicio</a>
         </div>
     </nav>
 
@@ -38,30 +39,57 @@
                 Resultados de la búsqueda para "{{ $query }}"
             </div>
 
-            @if($users->isEmpty())
+            @if($users->isEmpty() && $pages->isEmpty())
                 <div class="p-10 text-center text-gray-500">
-                    <p class="text-lg mb-2">No encontramos a nadie con ese nombre.</p>
-                    <p>Intenta buscar otra cosa o mira si escribiste bien el nombre.</p>
+                    <p class="text-lg mb-2">No encontramos resultados para tu búsqueda.</p>
+                    <p>Intenta verificar la ortografía o buscar algo más general.</p>
                 </div>
             @else
-                @foreach($users as $user)
-                    <div class="result-item">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random" class="w-[50px] h-[50px] border border-gray-300">
-                        <div class="flex-1 flex justify-between items-center">
-                            <div>
-                                <a href="{{ route('users.show', $user) }}" class="link-name">
-                                    {{ $user->name }}
-                                </a>
-                                <div class="text-[#90949c] text-[11px]">
-                                    Usuario de Larabook
+                
+                @if(!$users->isEmpty())
+                    <div class="section-header">Personas</div>
+                    @foreach($users as $user)
+                        <div class="result-item">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random" class="w-[50px] h-[50px] border border-gray-300">
+                            <div class="flex-1 flex justify-between items-center">
+                                <div>
+                                    <a href="{{ route('users.show', $user) }}" class="link-name">
+                                        {{ $user->name }}
+                                    </a>
+                                    <div class="text-[#90949c] text-[11px]">
+                                        Usuario de Larabook
+                                    </div>
                                 </div>
+                                <a href="{{ route('users.show', $user) }}" class="fb-btn-gray text-[12px] decoration-none flex items-center gap-1">
+                                    <span class="text-[14px] font-bold text-[#3b5998]">+1</span> Agregar a amigos
+                                </a>
                             </div>
-                            <a href="{{ route('users.show', $user) }}" class="fb-btn-gray text-[12px] decoration-none">
-                                Ver perfil
-                            </a>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                @endif
+
+                @if(!$pages->isEmpty())
+                    <div class="section-header">Páginas</div>
+                    @foreach($pages as $page)
+                        <div class="result-item">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($page->name) }}&background=white&color=333&bold=true" class="w-[50px] h-[50px] border border-gray-300">
+                            <div class="flex-1 flex justify-between items-center">
+                                <div>
+                                    <a href="{{ route('pages.show', $page->slug) }}" class="link-name">
+                                        {{ $page->name }}
+                                    </a>
+                                    <div class="text-[#90949c] text-[11px]">
+                                        {{ $page->category }} • {{ $page->fans->count() }} Me gusta
+                                    </div>
+                                </div>
+                                <a href="{{ route('pages.show', $page->slug) }}" class="fb-btn-gray text-[12px] decoration-none flex items-center gap-1">
+                                    👍 Me gusta
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+
             @endif
         </div>
     </div>
