@@ -5,63 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $page->name }} | Larabook</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+    <script src="//unpkg.com/alpinejs" defer></script> <style>
         body { background-color: #e9ebee; font-family: 'lucida grande', tahoma, verdana, arial, sans-serif; font-size: 11px; color: #141823; }
         .fb-dark-blue { background-color: #3b5998; }
-        .fb-timeline-cover {
-            width: 100%;
-            height: 315px;
-            background: linear-gradient(to bottom, #7f8c8d, #95a5a6);
-            position: relative;
-            border: 1px solid #000;
-            border-bottom: none;
-        }
-        .fb-profile-pic {
-            width: 160px;
-            height: 160px;
-            border: 4px solid white;
-            position: absolute;
-            bottom: -30px;
-            left: 20px;
-            background: white;
-            box-shadow: 0 1px 1px rgba(0,0,0,.3);
-            z-index: 10;
-        }
-        .fb-timeline-nav {
-            background-color: white;
-            border: 1px solid #d3d6db;
-            border-top: none;
-            height: 42px;
-            border-radius: 0 0 3px 3px;
-        }
-        .fb-btn-gray {
-            background: linear-gradient(#f6f7f9, #ebedf0);
-            border: 1px solid #ced0d4;
-            color: #4b4f56;
-            font-weight: bold;
-            font-size: 12px;
-            padding: 4px 10px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            height: 28px;
-        }
+        .fb-timeline-cover { width: 100%; height: 315px; background: linear-gradient(to bottom, #7f8c8d, #95a5a6); position: relative; border: 1px solid #000; border-bottom: none; }
+        .fb-profile-pic { width: 160px; height: 160px; border: 4px solid white; position: absolute; bottom: -30px; left: 20px; background: white; box-shadow: 0 1px 1px rgba(0,0,0,.3); z-index: 10; }
+        .fb-timeline-nav { background-color: white; border: 1px solid #d3d6db; border-top: none; height: 42px; border-radius: 0 0 3px 3px; }
+        .fb-btn-gray { background: linear-gradient(#f6f7f9, #ebedf0); border: 1px solid #ced0d4; color: #4b4f56; font-weight: bold; font-size: 12px; padding: 4px 10px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; height: 28px; }
         .fb-box { background: white; border: 1px solid #d3d6db; border-radius: 3px; margin-bottom: 10px; }
         .fb-link { color: #3b5998; cursor: pointer; text-decoration: none; }
         .fb-link:hover { text-decoration: underline; }
     </style>
 </head>
-<body>
-
-    <nav class="fb-dark-blue fixed top-0 w-full z-50 h-[42px] border-b border-[#29487d] flex items-center justify-between px-4 md:px-20 shadow-sm">
+<body x-data="{ showMsgModal: false }"> <nav class="fb-dark-blue fixed top-0 w-full z-50 h-[42px] border-b border-[#29487d] flex items-center justify-between px-4 md:px-20 shadow-sm">
         <div class="flex items-center gap-3">
             <a href="{{ route('dashboard') }}" class="bg-white text-[#3b5998] w-6 h-6 rounded-[2px] flex items-center justify-center font-bold text-lg pb-1 hover:opacity-90">L</a>
-            <form action="{{ route('search') }}" method="GET" class="hidden md:flex bg-white rounded-[3px] border border-[#203a6d] h-6 items-center w-[350px]">
-                <input type="text" name="q" placeholder="Busca personas, lugares y cosas" class="w-full px-2 text-sm bg-transparent focus:outline-none placeholder-gray-500">
-                <button type="submit" class="bg-[#f2f2f2] h-full px-2 flex items-center border-l border-gray-300 cursor-pointer">🔍</button>
-            </form>
-        </div>
+            </div>
         <div class="flex items-center gap-4 text-white font-bold text-xs">
             <a href="{{ route('users.show', auth()->user()) }}" class="flex items-center gap-2 hover:bg-[#0000001a] px-2 py-1 rounded-[2px]">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random" class="w-5 h-5 bg-white p-[1px]">
@@ -74,6 +33,19 @@
 
     <div class="pt-12 max-w-[851px] mx-auto pb-20">
         
+        @if($isRealAdmin && !$isAdminView)
+            <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 mb-4 rounded text-xs flex justify-between items-center">
+                <span>👀 Estás viendo tu página como un visitante.</span>
+                <a href="{{ route('pages.show', $page->slug) }}" class="font-bold underline">Volver a la vista de Administrador</a>
+            </div>
+        @endif
+
+        @if(session('status'))
+            <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-2 mb-4 rounded text-xs">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <div class="relative mb-4">
             <div class="fb-timeline-cover overflow-hidden">
                 <img src="https://picsum.photos/seed/{{ $page->slug }}/851/315?grayscale" class="w-full h-full object-cover">
@@ -93,10 +65,11 @@
                     </div>
                 </div>
                 
-                <div class="flex gap-2 items-center">
-                    @if(auth()->id() === $page->user_id)
-                        <button class="fb-btn-gray border-yellow-400 bg-yellow-50 text-yellow-700">👑 Panel de Admin</button>
-                        <button class="fb-btn-gray">Editar página</button>
+                <div class="flex gap-2 items-center relative" x-data="{ showMenu: false }">
+                    
+                    @if($isAdminView)
+                        <a href="{{ route('pages.edit', $page->slug) }}" class="fb-btn-gray border-yellow-400 bg-yellow-50 text-yellow-700">👑 Panel de Admin</a>
+                        <a href="{{ route('pages.edit', $page->slug) }}" class="fb-btn-gray">Editar página</a>
                     @else
                         @if($isFan)
                              <button class="fb-btn-gray cursor-default text-[#3b5998]">
@@ -107,9 +80,28 @@
                                 <span class="mr-1 text-[14px]">👍</span> Me gusta
                             </button>
                         @endif
-                        <button class="fb-btn-gray">💬 Mensaje</button>
+                        
+                        <button @click="showMsgModal = true" class="fb-btn-gray">💬 Mensaje</button>
                     @endif
-                    <button class="fb-btn-gray px-2">...</button>
+
+                    <button @click="showMenu = !showMenu" @click.away="showMenu = false" class="fb-btn-gray px-2 relative">...</button>
+                    
+                    <div x-show="showMenu" class="absolute top-8 right-0 bg-white border border-gray-300 shadow-lg w-48 z-50 text-xs" style="display: none;">
+                        @if($isRealAdmin)
+                            @if($isAdminView)
+                                <a href="{{ route('pages.show', ['slug' => $page->slug, 'view_as' => 'user']) }}" class="block px-3 py-2 hover:bg-[#3b5998] hover:text-white text-gray-700 border-b border-gray-200">
+                                    👁️ Ver como visitante
+                                </a>
+                            @else
+                                <a href="{{ route('pages.show', $page->slug) }}" class="block px-3 py-2 hover:bg-[#3b5998] hover:text-white text-gray-700 border-b border-gray-200">
+                                    ⚙️ Volver a Admin
+                                </a>
+                            @endif
+                        @endif
+                        <a href="#" class="block px-3 py-2 hover:bg-[#3b5998] hover:text-white text-gray-700">Denunciar página</a>
+                        <a href="#" class="block px-3 py-2 hover:bg-[#3b5998] hover:text-white text-gray-700">Bloquear página</a>
+                    </div>
+
                 </div>
             </div>
 
@@ -134,28 +126,23 @@
 
             <div class="w-[536px]">
                 
-                @if(auth()->id() === $page->user_id)
-                <div class="fb-box">
-                    <div class="bg-[#f6f7f9] border-b border-[#e9eaed] px-3 py-2 text-xs font-bold text-[#4b4f56]">
-                        ✏️ Publicar como {{ $page->name }}
+                @if($isAdminView)
+                    <div class="fb-box">
+                        <div class="bg-[#f6f7f9] border-b border-[#e9eaed] px-3 py-2 text-xs font-bold text-[#4b4f56]">
+                            ✏️ Publicar como {{ $page->name }}
+                        </div>
+                        <div class="p-3">
+                            <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="page_id" value="{{ $page->id }}">
+                                <textarea name="content" rows="2" placeholder="Escribe algo en esta página..." class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-500"></textarea>
+                                <div class="mt-2"><input type="file" name="image" class="text-xs"></div>
+                                <div class="border-t border-[#e9eaed] mt-2 pt-2 text-right">
+                                    <button type="submit" class="bg-[#4e69a2] text-white border border-[#435a8b] font-bold text-[12px] px-3 py-1">Publicar</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="p-3">
-                        <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <input type="hidden" name="page_id" value="{{ $page->id }}">
-                            
-                            <textarea name="content" rows="2" placeholder="Escribe algo en esta página..." class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-500"></textarea>
-                            
-                            <div class="mt-2">
-                                <input type="file" name="image" class="text-xs">
-                            </div>
-
-                            <div class="border-t border-[#e9eaed] mt-2 pt-2 text-right">
-                                <button type="submit" class="bg-[#4e69a2] text-white border border-[#435a8b] font-bold text-[12px] px-3 py-1">Publicar</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
                 @endif
                 
                 @forelse($posts as $post)
@@ -166,6 +153,29 @@
                     </div>
                 @endforelse
 
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showMsgModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+        <div class="bg-white rounded border border-[#3b5998] shadow-lg w-[400px]">
+            <div class="bg-[#6d84b4] text-white px-3 py-2 font-bold text-sm flex justify-between items-center">
+                <span>Nuevo mensaje para {{ $page->name }}</span>
+                <button @click="showMsgModal = false" class="text-white hover:text-gray-200">✕</button>
+            </div>
+            <div class="p-3">
+                <form action="{{ route('pages.message', $page->id) }}" method="POST">
+                    @csrf
+                    <div class="mb-2 flex gap-2 items-center">
+                        <span class="text-xs text-gray-500">Para:</span>
+                        <span class="bg-[#e2e6ea] border border-[#ccd0d5] px-2 py-0.5 rounded text-xs font-bold text-[#333]">{{ $page->name }}</span>
+                    </div>
+                    <textarea name="body" rows="4" class="w-full border border-[#bdc7d8] p-2 text-sm focus:outline-none focus:border-[#3b5998]" placeholder="Escribe un mensaje..."></textarea>
+                    <div class="mt-3 flex justify-end gap-2">
+                        <button type="button" @click="showMsgModal = false" class="fb-btn-gray">Cancelar</button>
+                        <button type="submit" class="bg-[#4267b2] text-white border border-[#29487d] font-bold text-[12px] px-4 py-1.5 rounded-[2px]">Enviar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -67,9 +67,10 @@ Route::get('/seguridad-extrema', function () {
     return "¡Si ves esto es que confirmaste tu contraseña!";
 })->middleware(['auth', 'password.confirm']);
 
-// Sistema de Mensajería
+// Sistema de Mensajería - RUTAS DE MENSAJES DE USUARIO
     Route::get('/messages/archived', [MessageController::class, 'archived'])->name('messages.archived'); // <--- NUEVA
     Route::post('/messages/{user}/archive', [MessageController::class, 'archive'])->name('messages.archive'); // <--- NUEVA
+    Route::post('/messages/{user}/unarchive', [MessageController::class, 'unarchive'])->name('messages.unarchive'); // <--- NUEVA
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
@@ -80,6 +81,10 @@ Route::get('/seguridad-extrema', function () {
     Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
     // INBOX DE PÁGINA
     Route::get('/pages/{slug}/inbox', [PageController::class, 'inbox'])->name('pages.inbox');
+    // Enviar mensaje a una PÁGINA
+    Route::post('/pages/{page}/message', [MessageController::class, 'storePage'])->name('pages.message');
+    // RESPONDER COMO PÁGINA (Desde el Inbox)
+    Route::post('/pages/{slug}/reply/{user}', [PageController::class, 'replyAsPage'])->name('pages.reply');
     // Rutas de Administración de Páginas
     Route::get('/pages/{slug}/edit', [PageController::class, 'edit'])->name('pages.edit');
     Route::put('/pages/{slug}', [PageController::class, 'update'])->name('pages.update');  

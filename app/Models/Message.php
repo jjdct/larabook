@@ -9,7 +9,7 @@ class Message extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['sender_id', 'recipient_id', 'body', 'read_at', 'archived_for_sender', 'archived_for_recipient', 'sender_id', 'sender_type', 'recipient_id', 'recipient_type'];
+    protected $fillable = ['sender_id', 'recipient_id', 'body', 'read_at', 'archived_for_sender', 'archived_for_recipient', 'sender_id', 'sender_type', 'recipient_id', 'recipient_type', 'image_path'];
 
     // Relación Polimórfica: "El remitente puede ser cualquiera (User o Page)"
     public function sender()
