@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elegir una contraseña nueva | Larabook</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #e9ebee; font-family: Helvetica, Arial, sans-serif; color: #1c1e21; }

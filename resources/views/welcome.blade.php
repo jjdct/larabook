@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Facebook - Inicia sesión o regístrate</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -57,7 +58,7 @@
             z-index: 50;
             line-height: 1.4;
             color: #4b4f56;
-            left: 300px; /* Ajustar posición según necesidad */
+            left: 300px;
             top: 35px;
         }
         .arrow-left {
@@ -85,7 +86,7 @@
             @auth
                 <div class="flex items-center gap-4 mt-2 md:mt-4 self-end md:self-center">
                     <a href="{{ url('/dashboard') }}" class="flex items-center gap-2 text-white font-bold text-sm hover:underline">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->first_name) }}&background=white&color=3b5998" class="w-6 h-6 rounded-full border border-white">
+                        <img src="{{ Auth::user()->avatar }}" class="w-6 h-6 rounded-full border border-white bg-white">
                         {{ Auth::user()->first_name }}
                     </a>
                 </div>

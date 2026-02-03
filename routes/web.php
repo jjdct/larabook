@@ -22,9 +22,9 @@ Route::get('/r', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile/edit', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // --- ZONA DE PRUEBAS VISUALES (Borrar al terminar) ---
@@ -44,5 +44,67 @@ Route::get('/test/reset', function () {
     // Simulamos un token y el request para que no de error
     return view('auth.reset-password', ['request' => request()->merge(['token' => 'token-falso'])]);
 });
+
+Route::get('/messages', function () {
+    return view('messages.index'); // La vista que crearemos ahora
+})->name('messages');
+
+Route::get('/profile', function () {
+    return view('profile');
+})->middleware(['auth'])->name('profile');
+
+Route::get('/pages', function () {
+    return view('pages');
+})->name('pages.index');
+
+Route::get('/pages/larabook-team', function () {
+    return view('page');
+})->name('page.show');
+
+Route::get('/groups', function () {
+    return view('groups');
+})->name('groups.index');
+
+Route::get('/groups/laravel-devs', function () {
+    return view('group');
+})->name('group.show');
+
+Route::get('/games', function () {
+    return view('games');
+})->name('games.index');
+
+// 1. La página principal del juego (el marco)
+Route::get('/games/smash-friends', function () {
+    return view('game_canvas');
+})->name('games.play');
+
+// 2. El contenido del iframe (el mensaje del troll de Zuck)
+Route::get('/games/api-closed-message', function () {
+    // Devolvemos texto plano para que se vea crudo y "roto" dentro del iframe
+    return 'No hay juegos porque cerramos nuestro servicio y cerramos las API para que las empresas tengan tus datos y no un juego. 
+    
+    Atte. Zack. 
+    
+    Esto nos pasa por la polémica de 2017. 
+    Adiós SDKs. 
+    
+    ¡Deja de acusarnos, Miku! xdxdxdxd';
+});
+
+Route::get('/watch', function () {
+    return view('watch');
+})->name('watch');
+
+Route::get('/marketplace', function () {
+    return view('marketplace');
+})->name('marketplace');
+
+Route::get('/events', function () {
+    return view('events');
+})->name('events.index');
+
+Route::get('/saved', function () {
+    return view('saved');
+})->name('saved.index');
 
 require __DIR__.'/auth.php';

@@ -22,17 +22,22 @@ return new class extends Migration
             // Datos básicos
             $table->string('email')->unique();
             
+            // --- NUEVOS CAMPOS DE CONTROL ---
+            // Por defecto (0/false), nadie es verificado ni admin al registrarse
+            $table->boolean('is_verified')->default(false); // El Check Azul
+            $table->boolean('is_admin')->default(false);    // Acceso al Dashboard especial
+            
             // Lógica de Género completa
-            $table->string('gender')->nullable(); // 'male', 'female', 'custom'
-            $table->string('pronoun')->nullable(); // 'he', 'she', 'they' (para custom)
-            $table->string('custom_gender')->nullable(); // Texto libre (para custom)
+            $table->string('gender')->nullable(); 
+            $table->string('pronoun')->nullable(); 
+            $table->string('custom_gender')->nullable(); 
             
             $table->date('birthday')->nullable();
             
             // Elementos visuales del perfil
-            $table->string('profile_photo')->nullable(); // Ruta de la foto
-            $table->string('cover_photo')->nullable();   // Ruta de la portada
-            $table->text('bio')->nullable();             // Presentación corta
+            $table->string('profile_photo')->nullable(); 
+            $table->string('cover_photo')->nullable();   
+            $table->text('bio')->nullable();             
         
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
