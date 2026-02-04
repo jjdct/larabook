@@ -2,109 +2,110 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\Auth\RegisteredUserController; // Asegúrate de importar esto para el registro
+
+/*
+|--------------------------------------------------------------------------
+| RUTAS PÚBLICAS / GENERALES
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// La ruta oficial de registro
-Route::get('/register', [RegisteredUserController::class, 'create'])
-    ->middleware('guest')
-    ->name('register');
-
-// El alias corto '/r' (Facebook lo usaba mucho en correos)
+// El alias corto '/r'
 Route::get('/r', function () {
     return redirect()->route('register');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile/edit', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// ZONA DE PRUEBAS VISUALES (Opcional: Borrar cuando quieras)
+Route::get('/test/verify', fn() => view('auth.verify-email'));
+Route::get('/test/confirm', fn() => view('auth.confirm-password'));
+Route::get('/test/reset', fn() => view('auth.reset-password', ['request' => request()->merge(['token' => 'fake'])]));
 
-// --- ZONA DE PRUEBAS VISUALES (Borrar al terminar) ---
 
-// 1. Ver la página de "Verificar Correo"
-Route::get('/test/verify', function () {
-    return view('auth.verify-email');
-});
+/*
+|--------------------------------------------------------------------------
+| RUTAS PROTEGIDAS (Requieren Login)
+|--------------------------------------------------------------------------
+*/
 
-// 2. Ver la página de "Confirmar Contraseña" (Área segura)
-Route::get('/test/confirm', function () {
-    return view('auth.confirm-password');
-});
+Route::middleware(['auth', 'verified'])->group(function () {
 
-// 3. Ver la página de "Cambiar Contraseña" (La que sale tras el clic del email)
-Route::get('/test/reset', function () {
-    // Simulamos un token y el request para que no de error
-    return view('auth.reset-password', ['request' => request()->merge(['token' => 'token-falso'])]);
-});
+    // 1. DASHBOARD / FEED
+    // Apuntamos a la vista 'feed' que creamos ayer (el muro real)
+    Route::get('/dashboard', function () {
+        return view('feed'); 
+    })->name('dashboard');
 
-Route::get('/messages', function () {
-    return view('messages.index'); // La vista que crearemos ahora
-})->name('messages');
 
-Route::get('/profile', function () {
-    return view('profile');
-})->middleware(['auth'])->name('profile');
+    // 2. CONFIGURACIÓN DE CUENTA (Antes era /profile en Breeze)
+    // Lo movemos a /settings para liberar /profile
+    Route::get('/settings', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/settings', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/settings', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-Route::get('/pages', function () {
-    return view('pages');
-})->name('pages.index');
 
-Route::get('/pages/larabook-team', function () {
-    return view('page');
-})->name('page.show');
+    // 3. PERFIL DE USUARIO (TIMELINE)
+    // Redirección simple: /profile -> /user/tu-usuario
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    // Perfil público: /user/{username}
+    Route::get('/user/{username}', [ProfileController::class, 'show'])->name('profile.show');
 
-Route::get('/groups', function () {
-    return view('groups');
-})->name('groups.index');
 
-Route::get('/groups/laravel-devs', function () {
-    return view('group');
-})->name('group.show');
+    // 4. GRUPOS (Lógica Dinámica Completa)
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+    Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
+    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+    Route::get('/groups/{slug}', [GroupController::class, 'show'])->name('groups.show');
 
-Route::get('/games', function () {
-    return view('games');
-})->name('games.index');
 
-// 1. La página principal del juego (el marco)
-Route::get('/games/smash-friends', function () {
-    return view('game_canvas');
-})->name('games.play');
-
-// 2. El contenido del iframe (el mensaje del troll de Zuck)
-Route::get('/games/api-closed-message', function () {
-    // Devolvemos texto plano para que se vea crudo y "roto" dentro del iframe
-    return 'No hay juegos porque cerramos nuestro servicio y cerramos las API para que las empresas tengan tus datos y no un juego. 
+    // 5. PÁGINAS (Lógica Dinámica)
+    // Nota: Aún no tenemos un index de páginas (dashboard de páginas), 
+    // así que dejamos la vista estática 'pages' solo en la ruta base si quieres,
+    // o usamos un controlador futuro. Por ahora dejamos la vista simple.
+    Route::get('/pages', function () { return view('pages'); })->name('pages.index');
     
-    Atte. Zack. 
+    Route::get('/pages/create', [PageController::class, 'create'])->name('pages.create');
+    Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
+    // Ruta dinámica para ver páginas
+    Route::get('/pages/{username}', [PageController::class, 'show'])->name('pages.show');
+
+
+    // 6. BÚSQUEDA
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+
+    // 7. SECCIONES AÚN ESTÁTICAS (Placeholders)
+    // Estas se quedarán así hasta que hagamos sus controladores
+    Route::get('/messages', fn() => view('messages.index'))->name('messages');
+    Route::get('/games', fn() => view('games'))->name('games.index');
+    Route::get('/watch', fn() => view('watch'))->name('watch');
+    Route::get('/marketplace', fn() => view('marketplace'))->name('marketplace');
+    Route::get('/events', fn() => view('events'))->name('events.index');
+    Route::get('/saved', fn() => view('saved'))->name('saved.index');
+    Route::get('/memories', fn() => view('memories'))->name('memories');
     
-    Esto nos pasa por la polémica de 2017. 
-    Adiós SDKs. 
-    
-    ¡Deja de acusarnos, Miku! xdxdxdxd';
+    // El juego del troll (Iframe)
+    Route::get('/games/smash-friends', fn() => view('game_canvas'))->name('games.play');
+    Route::get('/games/api-closed-message', function () {
+        return 'No hay juegos porque cerramos nuestro servicio... Atte. Zack.';
+    });
+
+    // RUTAS DE AMISTAD
+    // Usamos {user} para que Laravel inyecte el modelo automáticamente usando el ID
+    Route::post('/friend/add/{user}', [FriendshipController::class, 'add'])->name('friend.add');
+    Route::post('/friend/accept/{user}', [FriendshipController::class, 'accept'])->name('friend.accept');
+    Route::post('/friend/reject/{user}', [FriendshipController::class, 'reject'])->name('friend.reject');
+    // Página dedicada de amigos
+    Route::get('/friends', [FriendshipController::class, 'index'])->name('friends.index');
+
 });
 
-Route::get('/watch', function () {
-    return view('watch');
-})->name('watch');
-
-Route::get('/marketplace', function () {
-    return view('marketplace');
-})->name('marketplace');
-
-Route::get('/events', function () {
-    return view('events');
-})->name('events.index');
-
-Route::get('/saved', function () {
-    return view('saved');
-})->name('saved.index');
-
+// AUTH (Login/Register)
 require __DIR__.'/auth.php';

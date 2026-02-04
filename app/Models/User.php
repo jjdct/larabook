@@ -126,4 +126,68 @@ class User extends Authenticatable
         // Enviar NUESTRO correo
         \Illuminate\Support\Facades\Mail::to($this)->send(new \App\Mail\VerifyEmail($this, $url));
     }
+
+    public function pages()
+    {
+        return $this->hasMany(Page::class);
+    }
+
+    // ------------------------------------------------------------------------
+    // SISTEMA DE AMIGOS (Lógica de Relaciones)
+    // ------------------------------------------------------------------------
+
+    // 1. Amigos donde YO envié la solicitud
+    public function friendsOfMine()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'sender_id', 'receiver_id')
+                    ->wherePivot('status', 'accepted');
+    }
+
+    // 2. Amigos donde YO recibí la solicitud
+    public function friendOf()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'receiver_id', 'sender_id')
+                    ->wherePivot('status', 'accepted');
+    }
+
+    // 3. Todos los amigos (Unión de los dos anteriores)
+    // Uso: $user->friends
+    public function getFriendsAttribute()
+    {
+        return $this->friendsOfMine->merge($this->friendOf);
+    }
+
+    // --- FUNCIONES AUXILIARES PARA LA VISTA (BOTONES) ---
+
+    // A. Verificar si ya somos amigos
+    public function isFriendWith(User $user)
+    {
+        return $this->friends->contains($user);
+    }
+
+    // B. Verificar si YO le envié solicitud y está pendiente
+    public function hasSentRequestTo(User $user)
+    {
+        return Friendship::where('sender_id', $this->id)
+                         ->where('receiver_id', $user->id)
+                         ->where('status', 'pending')
+                         ->exists();
+    }
+
+    // C. Verificar si ÉL me envió solicitud (para mostrar botón "Aceptar")
+    public function hasPendingRequestFrom(User $user)
+    {
+        return Friendship::where('sender_id', $user->id)
+                         ->where('receiver_id', $this->id)
+                         ->where('status', 'pending')
+                         ->exists();
+    }
+
+    // 4. SOLICITUDES PENDIENTES (Para el icono de notificaciones)
+    // Son usuarios que ME enviaron solicitud (receiver_id = yo) y están 'pending'
+    public function pendingFriendRequests()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'receiver_id', 'sender_id')
+                    ->wherePivot('status', 'pending');
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User; // <--- ¡MUY IMPORTANTE! No olvides importar esto
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,8 +12,46 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    // ==========================================
+    // PARTE NUEVA: Perfil Público (Timeline)
+    // ==========================================
+
     /**
-     * Display the user's profile form.
+     * Muestra el perfil público de un usuario específico.
+     * Ruta: /user/{username}
+     */
+    public function show($username)
+    {
+        // Buscamos al usuario por su username. Si no existe, error 404.
+        $user = User::where('username', $username)->firstOrFail();
+
+        // Retornamos la vista visual del perfil (resources/views/profile/index.blade.php)
+        // Nota: Asegúrate de que tu vista se llame 'profile.index' o simplemente 'profile' según la carpeta
+        if (view()->exists('profile.index')) {
+            return view('profile.index', compact('user'));
+        }
+        
+        // Fallback por si guardaste la vista directamente en views/profile.blade.php
+        return view('profile', compact('user'));
+    }
+
+    /**
+     * Redirecciona /profile a tu propia URL pública.
+     * Ruta: /profile
+     */
+    public function index()
+    {
+        $user = Auth::user();
+        // Redirige a la función show() usando tu username
+        return Redirect::route('profile.show', $user->username);
+    }
+
+    // ==========================================
+    // PARTE ORIGINAL BREEZE: Configuración (Settings)
+    // ==========================================
+
+    /**
+     * Muestra el formulario para editar cuenta (Ahora en /settings).
      */
     public function edit(Request $request): View
     {
@@ -22,14 +61,12 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Actualiza la información de la cuenta.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        // Rellena el usuario con los datos validados en el Paso 1
         $request->user()->fill($request->validated());
 
-        // Si cambió el email, reseteamos la verificación
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
@@ -40,7 +77,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Elimina la cuenta del usuario.
      */
     public function destroy(Request $request): RedirectResponse
     {
