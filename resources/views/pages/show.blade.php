@@ -1,107 +1,102 @@
 @extends('layouts.app')
-
-@section('title', $page->name . ' | Larabook')
-
-@push('styles')
-<style>
-    .page-header-container { background: white; border-bottom: 1px solid #d3d6db; }
-    
-    .cta-btn {
-        padding: 6px 12px;
-        font-weight: bold;
-        font-size: 13px;
-        border-radius: 2px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-    }
-    .btn-blue { background-color: #4267b2; color: white; border: 1px solid #4267b2; }
-    .btn-gray { background-color: #f5f6f7; color: #4b4f56; border: 1px solid #ccd0d5; }
-</style>
-@endpush
+@section('title', $page->name)
 
 @section('content')
-
-    <div class="page-header-container shadow-sm mb-4 -mt-4 bg-white">
-        <div class="max-w-[851px] mx-auto relative h-[360px]">
-            
-            <div class="h-[315px] w-full bg-gray-800 relative overflow-hidden group cursor-pointer">
-                <img src="{{ $page->cover }}" class="w-full h-full object-cover">
-                
-                <div class="absolute bottom-4 left-[200px]">
-                    <h1 class="text-white text-[30px] font-bold text-shadow drop-shadow-md flex items-center">
-                        {{ $page->name }}
-                        @if($page->is_verified)
-                            <span class="text-[#1877f2] bg-white rounded-full w-5 h-5 flex items-center justify-center text-[12px] ml-2" title="Verificado">✓</span>
-                        @endif
-                    </h1>
-                    <div class="text-white text-sm opacity-90 font-normal">{{ '@' . $page->username }}</div>
-                </div>
-            </div>
-
-            <div class="absolute top-[230px] left-[15px] z-10">
-                <div class="w-[160px] h-[160px] bg-white p-1 rounded-[2px] border border-gray-300">
-                     <img src="{{ $page->avatar }}" class="w-full h-full object-cover border border-black/10 bg-gray-50">
-                </div>
-            </div>
-
-            <div class="h-[45px] pl-[190px] flex items-center justify-between border-b border-[#d3d6db] bg-white">
-                <div class="flex h-full">
-                    <div class="px-4 h-full flex items-center font-bold text-[#4b4f56] border-b-2 border-[#4267b2] cursor-pointer">Inicio</div>
-                    <div class="px-4 h-full flex items-center font-bold text-[#4b4f56] text-sm cursor-pointer hover:bg-gray-50">Información</div>
-                    <div class="px-4 h-full flex items-center font-bold text-[#4b4f56] text-sm cursor-pointer hover:bg-gray-50">Fotos</div>
-                </div>
-
-                <div class="flex gap-2 pr-4">
-                    @if(Auth::check() && Auth::id() === $page->user_id)
-                        <button class="cta-btn btn-gray">✏️ Editar página</button>
-                    @else
-                        <button class="cta-btn btn-gray">👍 Te gusta</button>
-                        <button class="cta-btn btn-blue">💬 Enviar mensaje</button>
-                    @endif
-                </div>
-            </div>
-
-        </div>
-    </div>
+    {{-- Incluimos el header parcial pasando 'home' como activo --}}
+    @include('pages.partials.header', ['active' => 'home'])
 
     <div class="max-w-[851px] mx-auto flex gap-3 pb-20">
-
         <div class="w-[306px] space-y-3">
             <div class="card p-3">
-                <div class="font-bold text-[#4b4f56] text-[16px] border-b border-[#e9eaed] pb-2 mb-2">Información</div>
-                
-                <div class="py-2 text-[13px] text-[#1d2129]">
-                    <div class="flex gap-3 mb-2">
-                        <span class="text-gray-400">ℹ️</span>
-                        <span>{{ $page->category }}</span>
-                    </div>
-                    
-                    @if($page->description)
-                    <div class="flex gap-3 mb-2">
-                        <span class="text-gray-400">📄</span>
-                        <span>{{ Str::limit($page->description, 100) }}</span>
-                    </div>
-                    @endif
-
-                    @if($page->location)
-                    <div class="flex gap-3 mb-2">
-                        <span class="text-gray-400">📍</span>
-                        <span>{{ $page->location }}</span>
-                    </div>
-                    @endif
+                <div class="font-bold text-[#4b4f56] border-b border-[#e9eaed] pb-2 mb-2">Información</div>
+                <div class="text-[13px] text-[#1d2129] space-y-2">
+                    <div>ℹ️ {{ $page->category }}</div>
+                    @if($page->description) <div>📄 {{ Str::limit($page->description, 80) }}</div> @endif
                 </div>
+            </div>
+            
+            <div class="card p-3">
+                 <div class="font-bold text-[#4b4f56] text-[16px] border-b border-[#e9eaed] pb-2 mb-2">Fotos</div>
+                 <div class="text-center text-gray-400 text-xs py-2">Ver todas</div>
             </div>
         </div>
 
         <div class="w-[533px]">
-            <div class="card p-4 text-center text-gray-500">
-                <div class="text-lg font-bold mb-1">Aún no hay publicaciones</div>
-                <p class="text-sm">Esta página es muy nueva.</p>
+            
+            {{-- Lógica para mostrar caja de posts solo a Admin REAL y no en modo visitante --}}
+            @php
+                $isAdmin = Auth::check() && Auth::id() === $page->user_id;
+                $isViewingAsVisitor = request('view_as') === 'visitor';
+            @endphp
+
+            @if($isAdmin && !$isViewingAsVisitor)
+            <div class="card p-3 mb-4" x-data="{ hasImage: false, fileName: '' }">
+                <div class="flex gap-2 border-b border-[#e9eaed] pb-3 text-[12px] font-bold text-[#4b4f56]">
+                    <div class="px-2 py-1 bg-[#f5f6f7] rounded cursor-pointer flex items-center gap-1">
+                        ✏️ Crear publicación
+                    </div>
+                    
+                    <label for="page_post_upload" class="px-2 py-1 hover:bg-[#f5f6f7] rounded cursor-pointer flex items-center gap-1 transition select-none">
+                        📷 Foto/video
+                    </label>
+                </div>
+
+                <div class="flex gap-2 mt-3">
+                    <img src="{{ $page->avatar }}" class="w-10 h-10 rounded-full border border-black/10 object-cover">
+                    
+                    <form action="{{ route('pages.post.store', $page->username) }}" 
+                          method="POST" 
+                          enctype="multipart/form-data" 
+                          class="flex-grow"> 
+                        @csrf
+                        
+                        <div class="w-full">
+                            <input type="text" 
+                                   name="content" 
+                                   class="w-full border-none focus:ring-0 text-sm placeholder-gray-500" 
+                                   placeholder="Publicar como {{ $page->name }}..." 
+                                   autocomplete="off">
+                            
+                            <input type="file" 
+                                   name="image" 
+                                   id="page_post_upload" 
+                                   class="hidden" 
+                                   accept="image/*"
+                                   @change="hasImage = true; fileName = $event.target.files[0].name">
+                        </div>
+
+                        <div x-show="hasImage" x-transition class="mt-2 text-xs text-green-600 bg-green-50 p-1.5 rounded border border-green-200 flex items-center gap-2" style="display: none;">
+                            <span class="text-lg">🖼️</span>
+                            <span class="font-semibold">Imagen seleccionada:</span>
+                            <span x-text="fileName" class="truncate max-w-[200px] italic text-gray-600"></span>
+                            
+                            <button type="button" 
+                                    @click="hasImage = false; fileName = ''; document.getElementById('page_post_upload').value = ''" 
+                                    class="ml-auto text-red-500 hover:text-red-700 font-bold px-2 hover:bg-red-50 rounded">
+                                ✕
+                            </button>
+                        </div>
+
+                        <div class="flex justify-end border-t border-[#e9eaed] pt-2 mt-2">
+                            <button type="submit" class="bg-[#1877f2] hover:bg-[#166fe5] text-white px-4 py-1 rounded font-bold text-xs transition">
+                                Publicar
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
+            @endif
+
+            {{-- LISTA DE POSTS --}}
+            @forelse($page->posts as $post)
+                <x-post-card :post="$post" />
+            @empty
+                <div class="card p-6 text-center text-gray-500">
+                    <div class="text-3xl mb-2">📢</div>
+                    <div class="font-bold text-lg">Aún no hay publicaciones</div>
+                    <div class="text-sm">¡Estrena el muro de tu página!</div>
+                </div>
+            @endforelse
         </div>
-
     </div>
-
 @endsection

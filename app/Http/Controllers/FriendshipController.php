@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Friendship;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\FriendRequestAccepted;
 
 class FriendshipController extends Controller
 {
@@ -35,6 +36,9 @@ class FriendshipController extends Controller
 
         if ($friendship) {
             $friendship->update(['status' => 'accepted']);
+            
+            // ✅ AGREGAR ESTA LÍNEA PARA QUE SUENE LA CAMPANA 🔔
+            $user->notify(new \App\Notifications\FriendRequestAccepted(Auth::user()));
         }
 
         return back()->with('status', '¡Ahora son amigos!');

@@ -2,15 +2,18 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\FriendshipController;
-use App\Http\Controllers\Auth\RegisteredUserController; // Asegúrate de importar esto para el registro
+use App\Http\Controllers\PostController; // <--- Importante
+use App\Http\Controllers\CommentController; // <--- Importante
+use App\Http\Controllers\ReactionController; // <--- Importante
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS PÚBLICAS / GENERALES
+| RUTAS PÚBLICAS
 |--------------------------------------------------------------------------
 */
 
@@ -18,15 +21,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// El alias corto '/r'
 Route::get('/r', function () {
     return redirect()->route('register');
 });
-
-// ZONA DE PRUEBAS VISUALES (Opcional: Borrar cuando quieras)
-Route::get('/test/verify', fn() => view('auth.verify-email'));
-Route::get('/test/confirm', fn() => view('auth.confirm-password'));
-Route::get('/test/reset', fn() => view('auth.reset-password', ['request' => request()->merge(['token' => 'fake'])]));
 
 
 /*
@@ -38,51 +35,83 @@ Route::get('/test/reset', fn() => view('auth.reset-password', ['request' => requ
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. DASHBOARD / FEED
-    // Apuntamos a la vista 'feed' que creamos ayer (el muro real)
-    Route::get('/dashboard', function () {
-        return view('feed'); 
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-
-    // 2. CONFIGURACIÓN DE CUENTA (Antes era /profile en Breeze)
-    // Lo movemos a /settings para liberar /profile
+    // 2. PERFIL Y AJUSTES
     Route::get('/settings', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/settings', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/settings', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Fotos de Perfil y Portada
+    Route::post('/profile/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.update_photo');
 
-    // 3. PERFIL DE USUARIO (TIMELINE)
-    // Redirección simple: /profile -> /user/tu-usuario
+    // Visualización de Perfil
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-    // Perfil público: /user/{username}
     Route::get('/user/{username}', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/user/{username}/about', [ProfileController::class, 'about'])->name('profile.about');
+    Route::get('/user/{username}/friends', [ProfileController::class, 'friends'])->name('profile.friends');
+    Route::get('/user/{username}/photos', [ProfileController::class, 'photos'])->name('profile.photos');
+    Route::get('/user/{username}/videos', [ProfileController::class, 'videos'])->name('profile.videos');
+    Route::get('/user/{username}/sports', [ProfileController::class, 'sports'])->name('profile.sports');
+    Route::get('/user/{username}/music', [ProfileController::class, 'music'])->name('profile.music');
+    Route::get('/user/{username}/movies', [ProfileController::class, 'movies'])->name('profile.movies');
+    Route::get('/user/{username}/books', [ProfileController::class, 'books'])->name('profile.books');
+    Route::get('/user/{username}/likes', [ProfileController::class, 'likes'])->name('profile.likes');
+    Route::get('/profile/log', [ProfileController::class, 'log'])->name('profile.log');
+
+    // ESTA ES LA RUTA QUE TE FALTABA 👇
+    // Publicar en el muro de un usuario (Mio o de amigo)
+    Route::post('/profile/{user}/post', [ProfileController::class, 'storePost'])->name('profile.post.store');
 
 
-    // 4. GRUPOS (Lógica Dinámica Completa)
+    // 3. POSTS (CRUD y Acciones)
+    Route::get('/post/{post}', [PostController::class, 'show'])->name('post.show');     // Ver Post individual
+    Route::delete('/post/{post}', [PostController::class, 'destroy'])->name('post.destroy'); // Borrar Post
+    Route::post('/post/{post}/save', [PostController::class, 'toggleSave'])->name('post.save'); // Guardar Post
+
+    // 4. INTERACCIONES (Comentarios y Reacciones)
+    Route::post('/post/{post}/comment', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comment/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/reaction', [ReactionController::class, 'toggle'])->name('reaction.toggle');
+    Route::get('/post/{post}', [PostController::class, 'show'])->name('post.show');
+    Route::post('/post/{post}/share', [PostController::class, 'share'])->name('post.share');
+    // Ruta para publicar en el Feed principal (Tu muro)
+    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+
+    // 5. AMIGOS
+    Route::post('/friend/add/{user}', [FriendshipController::class, 'add'])->name('friend.add');
+    Route::post('/friend/accept/{user}', [FriendshipController::class, 'accept'])->name('friend.accept');
+    Route::post('/friend/reject/{user}', [FriendshipController::class, 'reject'])->name('friend.reject');
+    Route::get('/friends', [FriendshipController::class, 'index'])->name('friends.index');
+
+
+    // 6. GRUPOS
     Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
     Route::get('/groups/{slug}', [GroupController::class, 'show'])->name('groups.show');
+    Route::post('/groups/{slug}/post', [GroupController::class, 'storePost'])->name('groups.post.store');
 
 
-    // 5. PÁGINAS (Lógica Dinámica)
-    // Nota: Aún no tenemos un index de páginas (dashboard de páginas), 
-    // así que dejamos la vista estática 'pages' solo en la ruta base si quieres,
-    // o usamos un controlador futuro. Por ahora dejamos la vista simple.
-    Route::get('/pages', function () { return view('pages'); })->name('pages.index');
-    
+    // 7. PÁGINAS
+    Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
     Route::get('/pages/create', [PageController::class, 'create'])->name('pages.create');
     Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
-    // Ruta dinámica para ver páginas
     Route::get('/pages/{username}', [PageController::class, 'show'])->name('pages.show');
+    Route::post('/pages/{username}/post', [PageController::class, 'storePost'])->name('pages.post.store');
+    // En routes/web.php
+    Route::get('/pages/{username}', [PageController::class, 'show'])->name('pages.show');
+    Route::get('/pages/{username}/about', [PageController::class, 'about'])->name('pages.about');
+    Route::get('/pages/{username}/photos', [PageController::class, 'photos'])->name('pages.photos');
 
 
-    // 6. BÚSQUEDA
+    // 8. BÚSQUEDA
     Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
-    // 7. SECCIONES AÚN ESTÁTICAS (Placeholders)
-    // Estas se quedarán así hasta que hagamos sus controladores
+    // 9. PLACEHOLDERS (Secciones estáticas)
     Route::get('/messages', fn() => view('messages.index'))->name('messages');
     Route::get('/games', fn() => view('games'))->name('games.index');
     Route::get('/watch', fn() => view('watch'))->name('watch');
@@ -90,22 +119,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/events', fn() => view('events'))->name('events.index');
     Route::get('/saved', fn() => view('saved'))->name('saved.index');
     Route::get('/memories', fn() => view('memories'))->name('memories');
+
+    Route::get('/notifications/{id}', function ($id) {
+    $notification = auth()->user()->notifications()->findOrFail($id);
+    $notification->markAsRead(); // Laravel Magic
+    return redirect($notification->data['link']); // Nos lleva al post
+    })->name('notifications.show');
+
+    Route::post('/notifications/mark-all', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return back();
+    })->name('notifications.readAll');
     
-    // El juego del troll (Iframe)
+    // Juegos
     Route::get('/games/smash-friends', fn() => view('game_canvas'))->name('games.play');
-    Route::get('/games/api-closed-message', function () {
-        return 'No hay juegos porque cerramos nuestro servicio... Atte. Zack.';
-    });
 
-    // RUTAS DE AMISTAD
-    // Usamos {user} para que Laravel inyecte el modelo automáticamente usando el ID
-    Route::post('/friend/add/{user}', [FriendshipController::class, 'add'])->name('friend.add');
-    Route::post('/friend/accept/{user}', [FriendshipController::class, 'accept'])->name('friend.accept');
-    Route::post('/friend/reject/{user}', [FriendshipController::class, 'reject'])->name('friend.reject');
-    // Página dedicada de amigos
-    Route::get('/friends', [FriendshipController::class, 'index'])->name('friends.index');
-
+    // Rutas de prueba (Opcional)
+    Route::get('/test-500', function () { abort(500); });
 });
 
-// AUTH (Login/Register)
+/*
+|--------------------------------------------------------------------------
+| AUTH & FALLBACK
+|--------------------------------------------------------------------------
+*/
+
 require __DIR__.'/auth.php';
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});

@@ -27,14 +27,20 @@ class Group extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // ACCESSOR: Portada por defecto (Un patrón geométrico simple en SVG)
+    // RELACIÓN: Posts del grupo (¡NUEVO E INDISPENSABLE!)
+    public function posts()
+    {
+        return $this->morphMany(Post::class, 'wall');
+    }
+
+    // ACCESSOR: Portada por defecto (Patrón geométrico)
     public function getCoverAttribute()
     {
         if ($this->attributes['cover_photo'] ?? null) {
             return asset('storage/' . $this->cover_photo);
         }
 
-        // Generamos un patrón azulado estilo grupo
+        // Patrón azulado
         $svg = '
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -50,12 +56,27 @@ class Group extends Model
     }
 
      /**
-     * 3. AVATAR DE GRUPO (Para listas)
-     * Reutilizamos la lógica de la portada pero para mostrar en miniatura.
+     * ACCESSOR: Avatar de Grupo (Icono de personas)
      */
     public function getAvatarAttribute()
     {
-        // Si tiene foto, la usa. Si no, usa el generador de patrones que ya hicimos.
-        return $this->cover; 
+        // Si hay portada personalizada, usémosla como avatar también por ahora (o podrías agregar columna 'avatar')
+        if ($this->attributes['cover_photo'] ?? null) {
+            return asset('storage/' . $this->cover_photo);
+        }
+
+        // Generamos un icono de "Grupo de personas" en SVG para que se vea diferente a la portada
+        $color = '#1877f2'; // Azul Facebook
+        $bg = '#e7f3ff';    // Azul claro
+        
+        $svg = '
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" style="background-color:'.$bg.';">
+            <circle cx="250" cy="220" r="80" fill="'.$color.'"/>
+            <path fill="'.$color.'" d="M250,320 c-60,0 -110,40 -110,100 v20 h220 v-20 c0,-60 -50,-100 -110,-100 z"/>
+            <circle cx="380" cy="250" r="60" fill="'.$color.'" opacity="0.7"/>
+            <circle cx="120" cy="250" r="60" fill="'.$color.'" opacity="0.7"/>
+        </svg>';
+
+        return "data:image/svg+xml;base64," . base64_encode($svg);
     }
 }

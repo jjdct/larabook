@@ -12,81 +12,78 @@ class Page extends Model
     protected $fillable = [
         'user_id',
         'name',
-        'username',
+        'username', // Es el "slug" único
         'category',
-        'profile_photo',
-        'cover_photo',
         'description',
-        'website',
         'location',
-        'is_verified',
-        'is_published',
+        'website',
+        'avatar', // path de la foto
+        'cover',  // path de la portada
+        'is_verified'
     ];
 
     protected $casts = [
         'is_verified' => 'boolean',
-        'is_published' => 'boolean',
     ];
 
-    // Relación: Una página pertenece a un Creador/Admin
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONES (Aquí estaba el error)
+    |--------------------------------------------------------------------------
+    */
+
+    // 1. El dueño de la página (Admin)
     public function owner()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function show($username)
+    // 2. LOS POSTS DE LA PÁGINA (¡ESTO FALTABA!) 🚨
+    // Usamos morphMany porque el Post se guarda como wall_type = 'App\Models\Page'
+    public function posts()
     {
-        // Busca la página. Si no existe, lanza error 404 automáticamente.
-        $page = Page::where('username', $username)->firstOrFail();
-
-        return view('pages.show', compact('page'));
+        return $this->morphMany(Post::class, 'wall')->latest();
     }
 
-    // ------------------------------------------------------------------------
-    // ACCESORS (Lógica Visual)
-    // ------------------------------------------------------------------------
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESORS (Lógica Visual)
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * 1. AVATAR DE PÁGINA
-     * Si no hay foto, generamos la "Bandera Gris" clásica de las Fan Pages.
-     */
-    public function getAvatarAttribute()
+    // Avatar por defecto (Icono de Bandera 🏳️)
+    public function getAvatarAttribute($value)
     {
-        // A) Si tiene foto subida, la devolvemos
-        if ($this->attributes['profile_photo'] ?? null) {
-            return asset('storage/' . $this->profile_photo);
+        if ($value) {
+            return asset('storage/' . $value);
         }
 
-        // B) Si no, generamos el SVG de la Bandera
-        $bgColor = '#dfe3ee'; // El mismo gris azulado
-        $iconColor = '#ffffff'; // Blanco para la figura
-
-        // Este SVG dibuja una bandera simple en el centro
-        $svg = '
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" style="background-color:'.$bgColor.';">
-            <rect x="130" y="80" width="30" height="340" rx="5" fill="'.$iconColor.'"/>
-            <path fill="'.$iconColor.'" d="M160,100 H380 L340,190 L380,280 H160 V100 Z"/>
-        </svg>';
-
-        return "data:image/svg+xml;base64," . base64_encode($svg);
+        // Icono de bandera svg generado al vuelo
+        $color = '#dfe3ee';
+        $iconColor = '#fff';
+        
+        return "data:image/svg+xml;base64," . base64_encode('
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" style="background-color:'.$color.';">
+                <path fill="'.$iconColor.'" d="M160,80 h20 v360 h-20 z M180,80 h220 l-60,100 l60,100 h-220 z"/>
+            </svg>');
     }
 
-    /**
-     * 2. PORTADA DE PÁGINA
-     * Igual que el usuario, un fondo gris oscuro neutro.
-     */
-    public function getCoverAttribute()
+    // Portada por defecto (Gris)
+    public function getCoverAttribute($value)
     {
-        if ($this->attributes['cover_photo'] ?? null) {
-            return asset('storage/' . $this->cover_photo);
+        if ($value) {
+            return asset('storage/' . $value);
         }
 
-        // Fondo gris oscuro plano (#4b4f56)
-        $svg = '
-        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none">
-            <rect width="100%" height="100%" fill="#4b4f56"/>
-        </svg>';
-
-        return "data:image/svg+xml;base64," . base64_encode($svg);
+        return "data:image/svg+xml;base64," . base64_encode('
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none">
+                <rect width="100%" height="100%" fill="#4b4f56"/>
+            </svg>');
+    }
+    
+    // Helper: Usar 'slug' o 'username' indistintamente en rutas
+    public function getSlugAttribute()
+    {
+        return $this->username;
     }
 }
